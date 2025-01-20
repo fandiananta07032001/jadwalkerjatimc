@@ -9,7 +9,20 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
     <style>
+      /* Styles untuk tema terang dan gelap */
+      body {
+        transition: background-color 0.3s, color 0.3s;
+      }
+      .dark-mode {
+        background-color: #121212;
+        color: #ffffff;
+      }
+
       .off {
         background-color: #ffcccc !important;
         color: red;
@@ -33,6 +46,13 @@
   <body>
     <div class="container mt-5">
       <h1 class="text-center mb-4">JADWAL SHIFT 2025 TEAM C KUAT</h1>
+
+      <!-- Switch untuk Dark Mode -->
+      <div class="mb-3 d-flex justify-content-end">
+        <label class="form-label me-2">Dark Mode</label>
+        <input type="checkbox" id="darkModeToggle" class="form-check-input" />
+      </div>
+
       <div class="mb-3">
         <label for="monthFilter" class="form-label">Pilih Bulan:</label>
         <select id="monthFilter" class="form-select">
@@ -51,6 +71,7 @@
           <option value="11">Desember</option>
         </select>
       </div>
+
       <div id="schedule"></div>
     </div>
 
@@ -113,7 +134,14 @@
         "2025-09-25": "Maulid Nabi Muhammad SAW",
         "2025-12-25": "Hari Raya Natal",
       };
-      let shiftIndex = 0;
+
+      function calculateShiftIndex(startMonth, endMonth) {
+        let totalDays = 0;
+        for (let i = startMonth; i < endMonth; i++) {
+          totalDays += months[i].days;
+        }
+        return totalDays % shiftsPattern.length;
+      }
 
       function generateSchedule(selectedMonth = "all") {
         let html = "";
@@ -122,17 +150,19 @@
           if (selectedMonth !== "all" && parseInt(selectedMonth) !== monthIndex)
             return;
 
+          let shiftIndex = calculateShiftIndex(0, monthIndex);
+
           html += `<h2 class="text-center mt-4">${month.name} 2025</h2>`;
           html += `<div class="table-responsive">
-                    <table class="table table-bordered table-striped text-center">
-                      <thead class="table-light">
-                        <tr>
-                          <th>Tanggal</th>
-                          <th>Hari</th>
-                          <th>Shift / Libur</th>
-                        </tr>
-                      </thead>
-                      <tbody>`;
+                      <table class="table table-bordered table-striped text-center">
+                        <thead class="table-light">
+                          <tr>
+                            <th>Tanggal</th>
+                            <th>Hari</th>
+                            <th>Shift / Libur</th>
+                          </tr>
+                        </thead>
+                        <tbody>`;
 
           for (let day = 1; day <= month.days; day++) {
             const date = new Date(2025, monthIndex, day);
@@ -159,31 +189,51 @@
             }
 
             html += `<tr>
-                        <td>${day}</td>
-                        <td>${dayOfWeek}</td>
-                        <td class="${cellClass}">${cellContent}</td>
-                      </tr>`;
+                          <td>${day}</td>
+                          <td>${dayOfWeek}</td>
+                          <td class="${cellClass}">${cellContent}</td>
+                        </tr>`;
 
             shiftIndex = (shiftIndex + 1) % shiftsPattern.length;
           }
 
           html += `</tbody>
-                    </table>
-                  </div>`;
+                      </table>
+                    </div>`;
         });
 
         document.getElementById("schedule").innerHTML = html;
       }
 
+      // Dark Mode Toggle Event Listener
+      document
+        .getElementById("darkModeToggle")
+        .addEventListener("change", function () {
+          const isDarkMode = this.checked;
+          if (isDarkMode) {
+            document.body.classList.add("dark-mode");
+            localStorage.setItem("darkMode", "enabled");
+          } else {
+            document.body.classList.remove("dark-mode");
+            localStorage.setItem("darkMode", "disabled");
+          }
+        });
+
+      // Set the initial state of Dark Mode based on localStorage
+      if (localStorage.getItem("darkMode") === "enabled") {
+        document.body.classList.add("dark-mode");
+        document.getElementById("darkModeToggle").checked = true;
+      }
+
       document
         .getElementById("monthFilter")
         .addEventListener("change", function () {
-          shiftIndex = 0; // Reset shift index untuk menghitung ulang jadwal
           generateSchedule(this.value);
         });
 
       generateSchedule();
     </script>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>
